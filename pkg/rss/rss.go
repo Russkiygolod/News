@@ -27,9 +27,8 @@ type Item struct {
 	Link        string `xml:"link"`
 }
 
-// Parse читает rss-поток и возвращет
-// массив раскодированных новостей.
-func Parse(url string) ([]storage.Posts, error) {
+// Parse читает rss-поток и возвращет массив новостей приведенных к типу []storage.Posts
+func ParseRss(url string) ([]storage.Posts, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -50,7 +49,6 @@ func Parse(url string) ([]storage.Posts, error) {
 	for _, item := range f.Chanel.Items {
 		post.Title = item.Title
 		post.Description = item.Description
-		//date := time.Now().Format("02/01/2006")
 		post.PubDate = item.PubDate
 		post.Link = item.Link
 		Posts = append(Posts, post)

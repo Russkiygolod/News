@@ -9,17 +9,14 @@ import (
 	"time"
 )
 
-type config struct {
+type Config struct {
 	URLS   []string `json:"rss"`
 	Period int      `json:"request_period"`
 }
 
-var posts = make(chan []storage.Posts)
-var errs = make(chan error)
-
 // чтение и раскодирование файла конфигурации пример адреса: "./config.json"
-func Conifg(addres string) config {
-	var config config
+func Read(addres string) (urls []string, perion int) {
+	var config Config
 	ReadFile, err := os.ReadFile(addres)
 	if err != nil {
 		log.Fatal(err)
@@ -28,12 +25,13 @@ func Conifg(addres string) config {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return config
+	return config.URLS, config.Period
 }
 
-func parseURL(url string, posts chan<- []storage.Posts, errs chan<- error, period int) {
+// чтение Rss, приведение к типу []storage.Posts, отправка данных в канал
+func Parse(url string, posts chan<- []storage.Posts, errs chan<- error, period int) {
 	for {
-		news, err := rss.Parse(url)
+		news, err := rss.ParseRss(url)
 		if err != nil {
 			errs <- err
 			continue

@@ -2,42 +2,19 @@ package main
 
 import (
 	"News/pkg/api"
-	"News/pkg/rss"
+	parseurl "News/pkg/parseUrl"
 	"News/pkg/storage"
 	"News/pkg/storage/postgres"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"time"
 
 	_ "github.com/lib/pq"
 )
 
-type config struct {
-	URLS   []string `json:"rss"`
-	Period int      `json:"request_period"`
-}
-
-type Service struct {
-	Rss           []string
-	RequestPeriod int
-	db            postgres.Store
-	Posts         storage.Posts
-	//m             sync.Mutex
-	// err           error
-}
-
-func New() *Service {
-	service := Service{}
-	service.db = postgres.Store{}
-	service.Posts = storage.Posts{}
-	//service.RequestPeriod =
-	//service.Rss =
-	return &service
-}
+var posts = make(chan []storage.Posts)
+var errs = make(chan error)
 
 func main() {
 
@@ -57,31 +34,20 @@ func main() {
 		log.Fatal(err)
 	}
 	db := postgres.New(conn)
-
-	// чтение и раскодирование файла конфигурации
-	ReadFile, err := os.ReadFile("./config.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var config config
-	err = json.Unmarshal(ReadFile, &config)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	posts := make(chan []storage.Posts)
-	errs := make(chan error)
-	for _, v := range config.URLS {
+	//запускаем чтение и раскодирование из config файла
+	Urls, Period := parseurl.Read("./config.json")
+	//идем по url и запукаем чтение Rss
+	for _, v := range Urls {
 		fmt.Println(v)
-		go parseURL(v, posts, errs, config.Period)
+		go parseurl.Parse(v, posts, errs, Period)
 	}
+	//отправляем данные из канала в БД
 	go func() {
 		for p := range posts {
 			db.NewPost(p)
 		}
 	}()
-
+	//вывод ошибок
 	go func() {
 		for err := range errs {
 			fmt.Println(err)
@@ -89,16 +55,4 @@ func main() {
 	}()
 	api := api.New(*db)
 	http.ListenAndServe(":80", api.Router())
-	//wg.Wait()
-}
-func parseURL(url string, posts chan<- []storage.Posts, errs chan<- error, period int) {
-	for {
-		news, err := rss.Parse(url)
-		if err != nil {
-			errs <- err
-			continue
-		}
-		posts <- news
-		time.Sleep(time.Second * time.Duration(period))
-	}
 }
