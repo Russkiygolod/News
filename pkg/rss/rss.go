@@ -37,16 +37,15 @@ func ParseRss(url string) ([]storage.Posts, error) {
 	if err != nil {
 		return nil, err
 	}
-	var f Feed
-	err = xml.Unmarshal(body, &f)
-
+	var feed Feed
+	err = xml.Unmarshal(body, &feed)
 	if err != nil {
 		return nil, err
 	}
 
 	var Posts []storage.Posts
 	var post storage.Posts
-	for _, item := range f.Chanel.Items {
+	for _, item := range feed.Chanel.Items {
 		post.Title = item.Title
 		post.Description = item.Description
 		post.PubDate = item.PubDate
