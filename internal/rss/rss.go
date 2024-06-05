@@ -2,7 +2,7 @@
 package rss
 
 import (
-	"News/pkg/storage"
+	posts "News/pkg/model"
 	"encoding/xml"
 	"io"
 	"net/http"
@@ -28,7 +28,7 @@ type Item struct {
 }
 
 // Parse читает rss-поток и возвращет массив новостей приведенных к типу []storage.Posts
-func ParseRss(url string) ([]storage.Posts, error) {
+func ParseRss(url string) ([]posts.Posts, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -43,8 +43,8 @@ func ParseRss(url string) ([]storage.Posts, error) {
 		return nil, err
 	}
 
-	var Posts []storage.Posts
-	var post storage.Posts
+	var Posts []posts.Posts
+	var post posts.Posts
 	for _, item := range feed.Chanel.Items {
 		post.Title = item.Title
 		post.Description = item.Description

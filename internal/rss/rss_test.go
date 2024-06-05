@@ -2,7 +2,7 @@
 package rss
 
 import (
-	"News/pkg/storage"
+	posts "News/pkg/model"
 	"reflect"
 	"testing"
 )
@@ -14,7 +14,7 @@ func TestParseRss(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    []storage.Posts
+		want    []posts.Posts
 		wantErr bool
 	}{
 		// TODO: Add test cases.

@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"News/pkg/storage"
+	posts "News/pkg/model"
 	"database/sql"
 )
 
@@ -17,7 +17,7 @@ func New(db *sql.DB) *Store {
 	return &postgres
 }
 
-func (s *Store) Posts(limit int) ([]storage.Posts, error) {
+func (s *Store) GetPosts(limit int) ([]posts.Posts, error) {
 	rows, err := s.db.Query(`
 	SELECT
 	id,
@@ -36,9 +36,9 @@ func (s *Store) Posts(limit int) ([]storage.Posts, error) {
 	if err != nil {
 		return nil, err
 	}
-	var posts []storage.Posts //массив структур
+	var Posts []posts.Posts
 	for rows.Next() {
-		var post storage.Posts //структура
+		var post posts.Posts
 		err = rows.Scan(
 			&post.Id,
 			&post.Title,
@@ -49,16 +49,15 @@ func (s *Store) Posts(limit int) ([]storage.Posts, error) {
 		if err != nil {
 			return nil, err
 		}
-		// добавление переменной в массив результатов
-		posts = append(posts, post)
+		Posts = append(Posts, post)
 	}
-	return posts, rows.Err()
+	return Posts, rows.Err()
 }
 
-func (s *Store) NewPost(Posts []storage.Posts) error {
-	posts := Posts
-	var post storage.Posts
-	for _, v := range posts {
+func (s *Store) NewPost(Posts []posts.Posts) error {
+	//posts := Posts
+	var post posts.Posts
+	for _, v := range Posts {
 		post = v
 		_, err := s.db.Exec(`
 			

@@ -1,10 +1,11 @@
 package main
 
 import (
-	"News/pkg/api"
-	parseurl "News/pkg/parseUrl"
-	"News/pkg/storage"
-	"News/pkg/storage/postgres"
+	"News/internal"
+	"News/internal/api"
+	parseurl "News/internal/parseUrl"
+	"News/internal/postgres"
+	posts "News/pkg/model"
 	"database/sql"
 	"fmt"
 	"log"
@@ -13,38 +14,34 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var posts = make(chan []storage.Posts)
+var Posts = make(chan []posts.Posts)
 var errs = make(chan error)
 
 func main() {
-
-	//////////// Реляционная БД PostgreSQL //////
 	conn, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		"localhost", 5432, "postgres", "postgres", "News"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	// закрываем подключение
 	defer conn.Close()
-	// Проверка соединения с БД
 	err = conn.Ping()
 	if err != nil {
 		fmt.Println("2")
 		log.Fatal(err)
 	}
-	db := postgres.New(conn)
-	//запускаем чтение и раскодирование из config файла
+	postgresDB := postgres.New(conn)
+	//запускаем чтение и раскодирование из config файла Urls
 	Urls, Period := parseurl.Read("./config.json")
 	//идем по url и запукаем чтение Rss
-	for _, v := range Urls {
-		fmt.Println(v)
-		go parseurl.Parse(v, posts, errs, Period)
+	for _, url := range Urls {
+		fmt.Println(url)
+		go parseurl.Parse(url, Posts, errs, Period)
 	}
 	//отправляем данные из канала в БД
 	go func() {
-		for p := range posts {
-			db.NewPost(p)
+		for p := range Posts {
+			postgresDB.NewPost(p)
 		}
 	}()
 	//вывод ошибок
@@ -53,8 +50,9 @@ func main() {
 			fmt.Println(err)
 		}
 	}()
-	api := api.New(*db)
-	http.ListenAndServe(":80", api.Router())
+	internal := internal.New(*postgresDB)
+	appi := api.New(internal)
+	log.Fatal(http.ListenAndServe(":80", appi.Router()))
 }
 
 // для коммита

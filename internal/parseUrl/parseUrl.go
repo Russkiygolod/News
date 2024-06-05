@@ -1,8 +1,8 @@
 package parseurl
 
 import (
-	"News/pkg/rss"
-	"News/pkg/storage"
+	"News/internal/rss"
+	posts "News/pkg/model"
 	"encoding/json"
 	"log"
 	"os"
@@ -29,7 +29,7 @@ func Read(addres string) (urls []string, perion int) {
 }
 
 // чтение Rss, приведение к типу []storage.Posts, отправка данных в канал
-func Parse(url string, posts chan<- []storage.Posts, errs chan<- error, period int) {
+func Parse(url string, posts chan<- []posts.Posts, errs chan<- error, period int) {
 	for {
 		news, err := rss.ParseRss(url)
 		if err != nil {

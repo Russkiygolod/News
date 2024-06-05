@@ -1,4 +1,4 @@
-package storage
+package posts
 
 type Posts struct {
 	Id          int

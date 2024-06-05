@@ -1,7 +1,7 @@
 package parseurl
 
 import (
-	"News/pkg/storage"
+	posts "News/pkg/model"
 	"reflect"
 	"testing"
 )
@@ -34,7 +34,7 @@ func TestRead(t *testing.T) {
 func TestParse(t *testing.T) {
 	type args struct {
 		url    string
-		posts  chan<- []storage.Posts
+		posts  chan<- []posts.Posts
 		errs   chan<- error
 		period int
 	}

@@ -1,7 +1,7 @@
 package api
 
 import (
-	"News/pkg/storage/postgres"
+	"News/internal"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -9,23 +9,20 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// API приложения.
 type API struct {
-	r  *mux.Router    // маршрутизатор запросов
-	db postgres.Store // база данных
+	r *mux.Router
+	i internal.Inter
 }
 
-// Конструктор API.
-func New(db postgres.Store) *API {
+func New(i internal.Inter) *API {
 	api := API{
-		r:  mux.NewRouter(),
-		db: db,
+		r: mux.NewRouter(),
+		i: i,
 	}
 	api.endpoints()
 	return &api
 }
 
-// Router возвращает маршрутизатор запросов.
 func (api *API) Router() *mux.Router {
 	return api.r
 }
@@ -45,7 +42,7 @@ func (api *API) posts(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	orders, err := api.db.Posts(limit)
+	orders, err := api.i.GetPosts(limit)
 	// Отправка данных клиенту в формате JSON.
 	json.NewEncoder(w).Encode(orders)
 	if err != nil {
