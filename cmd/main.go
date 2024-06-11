@@ -27,12 +27,11 @@ func main() {
 	defer conn.Close()
 	err = conn.Ping()
 	if err != nil {
-		fmt.Println("2")
 		log.Fatal(err)
 	}
 	postgresDB := postgres.New(conn)
 	//запускаем чтение и раскодирование из config файла Urls
-	Urls, Period := parseurl.Read("./config.json")
+	Urls, Period := parseurl.Read("./News/internal/config/config.json")
 	//идем по url и запукаем чтение Rss
 	for _, url := range Urls {
 		fmt.Println(url)

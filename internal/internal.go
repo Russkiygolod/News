@@ -6,12 +6,12 @@ import (
 )
 
 type Inter struct {
-	ps *postgres.Store
+	ps postgres.Store
 }
 
 func New(ps postgres.Store) Inter {
 	var Inters Inter
-	*Inters.ps = ps
+	Inters.ps = ps
 	return Inters
 }
 

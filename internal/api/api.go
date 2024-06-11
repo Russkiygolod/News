@@ -30,7 +30,7 @@ func (api *API) Router() *mux.Router {
 func (api *API) endpoints() {
 	api.r.HandleFunc("/news/{n}", api.posts).Methods(http.MethodGet)
 	// веб-приложение
-	api.r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./webapp"))))
+	api.r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./internal/webapp"))))
 }
 
 // возвращает n последних новостей
